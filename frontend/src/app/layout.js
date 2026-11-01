@@ -1,8 +1,11 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'ORBIT | NASA Earth Systems Trend Detective',
+  title: 'Be An Earth System Trend Detective',
   description: 'A window into the missions, discoveries, and long-term trends exploring our changing planet with NASA satellite observations.',
+  icons: {
+    icon: '/nasa-logo.svg',
+  },
 };
 
 export default function RootLayout({ children }) {
