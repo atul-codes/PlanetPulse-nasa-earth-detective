@@ -32,9 +32,9 @@ export default function Navbar() {
   return (
     <>
       {/* Topline Banner matching ORBIT */}
-      <div className="topline">
+      {/* <div className="topline">
         <span>LIVE TRACKING</span> &nbsp; NASA Earth Systems Intelligence &nbsp; · &nbsp; {utcTime}
-      </div>
+      </div> */}
 
       {/* Main Navigation Header */}
       <header className="relative z-30 border-b border-white/[0.14] bg-[#070b13]/90 backdrop-blur-md">
