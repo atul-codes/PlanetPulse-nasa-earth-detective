@@ -69,15 +69,17 @@ export default function HomePage() {
           />
 
           <div className="wrap relative w-full pb-[74px] z-10">
-            <div className="max-w-[690px]">
-              <div className="eyebrow">Humanity, looking outward · Est. 1958</div>
-              <h1 className="font-display font-medium text-[clamp(54px,8vw,108px)] leading-[0.96] tracking-[-0.065em] my-[22px]">
-                The universe<br />
-                is <em className="not-italic text-[#a9c8ff]">closer</em><br />
-                than ever.
+            <div className="max-w-[720px]">
+              <div className="flex items-center gap-3 mb-3">
+                <img src="/nasa-logo.svg" alt="NASA Logo" className="h-10 w-auto object-contain" />
+                <span className="eyebrow m-0">NASA Space </span>
+              </div>
+              <h1 className="font-display font-medium text-[clamp(44px,6.5vw,84px)] leading-[1.02] tracking-[-0.05em] my-[20px] text-white">
+                Be An Earth System<br />
+                <span className="text-[#e0684f]">Trend Detective</span>
               </h1>
-              <p className="text-base leading-[1.7] text-[#ccd2dc] max-w-[440px] mb-[34px]">
-                From the first steps on the Moon to long-term NASA satellite observations of our planet, follow the missions expanding what we know about our changing Earth and universe.
+              <p className="text-base leading-[1.7] text-[#ccd2dc] max-w-[480px] mb-[34px]">
+                Explore long-term NASA satellite observations of our planet, follow the missions, and determine if environmental changes are statistically significant.
               </p>
               <Link href="/dashboard" className="button">
                 <span>Begin exploring</span>
