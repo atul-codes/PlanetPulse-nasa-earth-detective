@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
@@ -38,12 +39,22 @@ export default function Navbar() {
       {/* Main Navigation Header */}
       <header className="relative z-30 border-b border-white/[0.14] bg-[#070b13]/90 backdrop-blur-md">
         <div className="wrap flex items-center justify-between h-[74px]">
+          
           {/* Brand */}
           <Link href="/" className="flex items-center gap-3 font-display font-bold text-lg tracking-[0.08em] text-[#f3f5f8] group">
-            <span className="brand-mark">✳</span>
-            <span>ORBIT</span>
-            <span className="hidden sm:inline-block text-[9px] font-mono font-normal tracking-[0.16em] text-[#9aa7bd] uppercase pl-2 border-l border-white/20">
-              Earth Detective
+            <Image
+              src="/nasa-logo.svg"
+              alt="NASA Logo"
+              width={42}
+              height={35}
+              unoptimized
+              priority
+              className="h-8 w-auto object-contain shrink-0 transition-transform duration-200 group-hover:scale-105"
+            />
+            <span className="tracking-[0.08em] text-white">NASA SPACE</span>
+            <span className="h-5 w-[1px] bg-white/25 mx-0.5" />
+            <span className="text-[10px] sm:text-[11px] font-mono font-normal tracking-[0.2em] text-[#9aa7bd] uppercase">
+              EARTH DETECTIVE
             </span>
           </Link>
 
