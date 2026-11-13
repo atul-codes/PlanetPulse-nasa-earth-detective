@@ -20,6 +20,11 @@ from pydantic import BaseModel, Field, ConfigDict
 from app.services.data_processor import clean_time_series
 from app.services.trend_analyzer import analyze_trend
 from app.services.seasonal_analysis import deseasonalize_series
+from app.services.nasa_resources import (
+    get_all_nasa_resources,
+    get_nasa_resource_by_id,
+    NASA_DATA_RESOURCES
+)
 
 
 # ==========================================
@@ -229,7 +234,8 @@ def health_check():
             "Sen's Slope",
             "Climatological Deseasonalization"
         ],
-        "alphaDefault": 0.05
+        "alphaDefault": 0.05,
+        "nasaResourcesCount": len(NASA_DATA_RESOURCES)
     }
 
 
@@ -244,7 +250,52 @@ def root():
         "message": "Welcome to Earth Systems Trend Detective API",
         "status": "RUNNING",
         "documentation": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "resourcesEndpoint": "/api/resources"
+    }
+
+
+# ==========================================
+# 7.1. NASA DATA & RESOURCES ENDPOINTS
+# ==========================================
+
+@app.get("/api/resources")
+def list_nasa_resources(
+    category: Optional[str] = None,
+    capability: Optional[str] = None
+):
+    """
+    Returns the official NASA Data & Resources catalog from the Space Apps Challenge:
+    - Giovanni (NASA GES DISC)
+    - Hydrology Time Series (Data Rods / LDAS)
+    - AppEEARS (NASA LP DAAC)
+    - Climate Data Online (NOAA NCDC CDO)
+    - Time-Series Analysis of SeaWiFS Chlorophyll (Methodology Reference)
+    """
+    items = get_all_nasa_resources(category=category, capability=capability)
+    return {
+        "status": "SUCCESS",
+        "count": len(items),
+        "totalCatalogCount": len(NASA_DATA_RESOURCES),
+        "resources": items
+    }
+
+
+@app.get("/api/resources/{resource_id}")
+def get_nasa_resource(resource_id: str):
+    """
+    Returns detailed metadata, capabilities, key variables, and
+    access links for a specific NASA resource.
+    """
+    resource = get_nasa_resource_by_id(resource_id)
+    if not resource:
+        raise HTTPException(
+            status_code=404,
+            detail=f"NASA resource '{resource_id}' not found. Available IDs: {[r['id'] for r in NASA_DATA_RESOURCES]}"
+        )
+    return {
+        "status": "SUCCESS",
+        "resource": resource
     }
 
 

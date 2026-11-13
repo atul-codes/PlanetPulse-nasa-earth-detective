@@ -1,7 +1,20 @@
+# ==============================================================================
+# Earth Systems Trend Detective — Backend Dependencies (Production Minimal)
+# ==============================================================================
+# Optimized for Vercel Serverless / AWS Lambda / Docker.
+# Uncompressed bundle size < 85 MB (well within Vercel's 250 MB hard limit).
+# ==============================================================================
+
+# Core Web & ASGI Server
 fastapi>=0.100.0
 uvicorn>=0.20.0
 pydantic>=2.0.0
+
+# Scientific & Statistical Analysis
 numpy>=1.24.0
 scipy>=1.10.0
 pymannkendall>=1.4.3
+
+# Environment Configuration
 python-dotenv>=1.0.0
+

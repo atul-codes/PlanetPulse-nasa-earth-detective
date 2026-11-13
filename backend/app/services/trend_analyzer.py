@@ -7,35 +7,74 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any
 
 
-def _parse_date(date_string: str) -> datetime:
+def _parse_date(date_string: Any) -> datetime:
     """
-    Parse ISO date and normalize timezone to UTC.
-    Naive dates are interpreted as UTC.
+    Parse any standard Earth Science date string or object into a UTC datetime.
+
+    Supports:
+    - YYYY (e.g., '2005')
+    - YYYYMM (e.g., '200501')
+    - YYYY-MM or YYYY/MM (e.g., '2005-01', '2005/01', '2005-1')
+    - YYYY-MM-DD or YYYY/MM/DD (e.g., '2005-01-01', '2005/01/15')
+    - Full ISO 8601 with or without timezone / Z (e.g., '2005-01-01T00:00:00Z')
+    - datetime / date instances
     """
+    if isinstance(date_string, datetime):
+        if date_string.tzinfo is None:
+            return date_string.replace(tzinfo=timezone.utc)
+        return date_string.astimezone(timezone.utc)
+
+    if hasattr(date_string, "year") and hasattr(date_string, "month") and hasattr(date_string, "day"):
+        return datetime(date_string.year, date_string.month, date_string.day, tzinfo=timezone.utc)
 
     if not isinstance(date_string, str):
-        raise ValueError("Date must be a string.")
+        raw_str = str(date_string)
+    else:
+        raw_str = date_string
 
-    date_string = date_string.strip()
+    raw_str = raw_str.strip()
+    if not raw_str:
+        raise ValueError("Date cannot be empty.")
 
+    # 1. 4-digit Year only: '2005'
+    if len(raw_str) == 4 and raw_str.isdigit():
+        return datetime(int(raw_str), 1, 1, tzinfo=timezone.utc)
+
+    # 2. Compact YYYYMM: '200501'
+    if len(raw_str) == 6 and raw_str.isdigit():
+        return datetime(int(raw_str[:4]), int(raw_str[4:6]), 1, tzinfo=timezone.utc)
+
+    # Normalize slashes to hyphens
+    normalized = raw_str.replace("/", "-")
+
+    # 3. YYYY-MM (e.g. '2005-01' or '2005-1')
+    parts = normalized.split("-")
+    if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+        return datetime(int(parts[0]), int(parts[1]), 1, tzinfo=timezone.utc)
+
+    # 4. YYYY-MM-DD (e.g. '2005-01-15' or '2005-1-5')
+    if len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit() and parts[2].isdigit():
+        return datetime(int(parts[0]), int(parts[1]), int(parts[2]), tzinfo=timezone.utc)
+
+    # 5. ISO 8601 strings
     try:
-        # Support YYYYMM format
-        if len(date_string) == 6 and date_string.isdigit():
-            dt = datetime.strptime(date_string, "%Y%m")
-        # Support YYYY-MM format
-        elif len(date_string) == 7 and date_string[4] == "-":
-            dt = datetime.strptime(date_string, "%Y-%m")
-        else:
-            dt = datetime.fromisoformat(
-                date_string.replace("Z", "+00:00")
-            )
+        clean_iso = normalized.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(clean_iso)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
     except ValueError:
-        raise ValueError(f"Invalid ISO date: {date_string}")
+        pass
 
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+    # 6. Fallback strptime formats
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y-%m", "%d-%m-%Y", "%m/%d/%Y"):
+        try:
+            dt = datetime.strptime(normalized, fmt)
+            return dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
 
-    return dt.astimezone(timezone.utc)
+    raise ValueError(f"Invalid date format: '{date_string}'. Supported formats include YYYY, YYYY-MM, YYYY-MM-DD, and ISO 8601.")
 
 
 def _decimal_year(dt: datetime) -> float:
