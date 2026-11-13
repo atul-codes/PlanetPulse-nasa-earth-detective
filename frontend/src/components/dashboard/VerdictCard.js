@@ -37,6 +37,11 @@ export default function VerdictCard({
     ? Number((linearRegression.slopeUnit === 'value/year' ? linearRegression.slope : linearRegression.slope * 12).toFixed(4))
     : null;
 
+  const slopeFactor = senSlope.slopeUnit === 'value/year' ? 1 : 12;
+  const senCiFormatted = senSlope.ci95 && Array.isArray(senSlope.ci95) && senSlope.ci95.length >= 2
+    ? `[${senSlope.ci95[0] * slopeFactor > 0 ? '+' : ''}${(senSlope.ci95[0] * slopeFactor).toFixed(4)}, ${senSlope.ci95[1] * slopeFactor > 0 ? '+' : ''}${(senSlope.ci95[1] * slopeFactor).toFixed(4)}] ${unit}/yr`
+    : '—';
+
   return (
     <div className="w-full bg-[#080e18] border border-white/[0.14] p-5 sm:p-6 flex flex-col justify-between space-y-6">
       <div>
@@ -48,14 +53,15 @@ export default function VerdictCard({
             </span>
             {computedBy && (
               <span
-                title={backendDiagnostics ? `${computedBy} | Note: ${backendDiagnostics}` : computedBy}
-                className={`font-mono text-[9px] px-1.5 py-0.5 rounded-none border ${
+                title={backendDiagnostics ? `${computedBy} | Diagnostic: ${backendDiagnostics}` : computedBy}
+                className={`font-mono text-[9px] px-2 py-0.5 rounded-none border inline-flex items-center gap-1.5 ${
                   engineStatus === 'ONLINE'
                     ? 'text-[#38ef7d] border-[#38ef7d]/40 bg-[#38ef7d]/10'
-                    : 'text-[#8492a8] border-white/10 bg-white/5'
+                    : 'text-[#e5c07b] border-[#e5c07b]/40 bg-[#e5c07b]/10'
                 }`}
               >
-                {computedBy.includes('Python') ? '⚡ Python (SciPy)' : 'JS Engine'}
+                <span className={`w-1.5 h-1.5 rounded-full ${engineStatus === 'ONLINE' ? 'bg-[#38ef7d]' : 'bg-[#e5c07b]'}`} />
+                {computedBy.includes('Python') ? '⚡ Python (SciPy)' : 'JS Engine (Fallback)'}
               </span>
             )}
           </div>
@@ -148,7 +154,7 @@ export default function VerdictCard({
               <div className="flex justify-between">
                 <span>Sen's 95% CI Range:</span>
                 <span className="text-white">
-                  {senSlope.ci95 ? `[${senSlope.ci95[0]}, ${senSlope.ci95[1]}]` : '—'}
+                  {senCiFormatted}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -159,6 +165,12 @@ export default function VerdictCard({
                     : '—'}
                 </span>
               </div>
+              {backendDiagnostics && (
+                <div className="pt-2 mt-1 border-t border-white/[0.08] text-[10px] text-[#e5c07b]">
+                  <span className="text-[#8492a8] uppercase tracking-wider block font-bold mb-0.5">Backend Diagnostic Note:</span>
+                  <span className="break-all font-mono opacity-90">{backendDiagnostics}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

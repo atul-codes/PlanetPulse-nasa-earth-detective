@@ -30,8 +30,10 @@ export async function POST(request) {
     let hypotheses = [];
     let limitations = [];
 
+    const slopeTimeframe = statsResult.senSlope?.slopeUnit === 'value/year' ? 'year' : 'month';
+
     if (classification.includes('Significant Increasing')) {
-      interpretation = `The Mann-Kendall non-parametric test confirms a statistically significant increasing trend (p = ${mkPValue} < 0.05, Z = ${statsResult.mannKendall?.zScore}) in ${varConfig.name} over the observed timeframe across ${regionName}. Sen's robust slope indicates a median rate of change of approximately +${senSlope} ${varConfig.unit} per timestep (+${totalChangePct}% overall).`;
+      interpretation = `The Mann-Kendall non-parametric test confirms a statistically significant increasing trend (p = ${mkPValue} < 0.05, Z = ${statsResult.mannKendall?.zScore}) in ${varConfig.name} over the observed timeframe across ${regionName}. Sen's robust slope indicates a median rate of change of approximately +${senSlope} ${varConfig.unit}/${slopeTimeframe} (+${totalChangePct}% overall).`;
       
       if (variableId.includes('T2M')) {
         hypotheses = [
@@ -51,7 +53,7 @@ export async function POST(request) {
         ];
       }
     } else if (classification.includes('Significant Decreasing')) {
-      interpretation = `The empirical analysis identifies a statistically significant downward trend (p = ${mkPValue} < 0.05) in ${varConfig.name} across ${regionName}. Sen's median slope demonstrates a rate of ${senSlope} ${varConfig.unit} per period (${totalChangePct}% total shift).`;
+      interpretation = `The empirical analysis identifies a statistically significant downward trend (p = ${mkPValue} < 0.05) in ${varConfig.name} across ${regionName}. Sen's median slope demonstrates a rate of ${senSlope} ${varConfig.unit}/${slopeTimeframe} (${totalChangePct}% total shift).`;
 
       if (variableId.includes('NDVI')) {
         hypotheses = [

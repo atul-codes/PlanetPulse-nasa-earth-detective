@@ -3,13 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import {
-  ENVIRONMENTAL_VARIABLES
+  ENVIRONMENTAL_VARIABLES,
+  NASA_DATA_RESOURCES
 } from '@/lib/nasa/datasetRegistry';
 import {
   GitCompare,
   Loader2,
   Sparkles,
-  MapPin
+  MapPin,
+  ExternalLink,
+  Database,
+  Search
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -35,6 +39,8 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(false);
   const [comparisonResults, setComparisonResults] = useState([]);
   const [combinedChartData, setCombinedChartData] = useState([]);
+  const [resourceCategory, setResourceCategory] = useState('ALL');
+  const [resourceSearch, setResourceSearch] = useState('');
 
   const activeVar = ENVIRONMENTAL_VARIABLES[variableId] || ENVIRONMENTAL_VARIABLES.T2M;
 
@@ -80,10 +86,18 @@ export default function ComparePage() {
               isSignificant: analysis.results?.isSignificant,
               pValue: analysis.results?.mannKendall?.pValue,
               zScore: analysis.results?.mannKendall?.zScore,
-              senSlopeYear: analysis.results?.senSlope?.slope
-                ? Number((analysis.results.senSlope.slope * 12).toFixed(4))
+              senSlopeYear: analysis.results?.senSlope?.slope !== undefined
+                ? Number(
+                    (analysis.results.senSlope.slopeUnit === 'value/year'
+                      ? analysis.results.senSlope.slope
+                      : analysis.results.senSlope.slope * 12
+                    ).toFixed(4)
+                  )
                 : 0,
               totalChangePercent: analysis.results?.linearRegression?.totalChangePercent || 0,
+              computedBy: analysis.computedBy,
+              engineStatus: analysis.engineStatus,
+              backendDiagnostics: analysis.backendDiagnostics,
               observations: item.observations
             };
           })
@@ -273,6 +287,140 @@ export default function ComparePage() {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* ─── NASA DATA & RESOURCES SECTION (Space Apps Challenge) ─── */}
+        <section className="pt-6 border-t border-white/[0.14] space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div>
+              <div className="eyebrow text-[#70a7ff]">Space Apps Official Catalog</div>
+              <h2 className="font-display font-medium text-2xl sm:text-3xl text-white mt-1">
+                NASA Data &amp; Resources
+              </h2>
+              <p className="text-xs text-[#a8b0bf] mt-1 max-w-2xl">
+                Official tools and archives recommended by NASA for time-series generation, environmental data retrieval, and statistical significance testing.
+              </p>
+            </div>
+            <span className="font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 border border-[#70a7ff]/30 text-[#70a7ff] bg-[#70a7ff]/10 shrink-0">
+              12 Resources &amp; Research Portals
+            </span>
+          </div>
+
+          {/* Interactive Filters & Search Toolbar */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#0a101a] border border-white/[0.1] p-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                { id: 'ALL', label: 'All Portals', count: 12 },
+                { id: 'NASA', label: 'NASA Tools', count: 3 },
+                { id: 'NOAA', label: 'NOAA & Literature', count: 3 },
+                { id: 'CSA', label: 'CSA & Satellites', count: 5 },
+                { id: 'Methodology', label: 'Statistical Guide', count: 1 }
+              ].map((tab) => {
+                const active = resourceCategory === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setResourceCategory(tab.id)}
+                    className={`px-3 py-1 text-xs font-mono transition border flex items-center gap-1.5 ${
+                      active
+                        ? 'border-[#70a7ff] bg-[#70a7ff]/15 text-white font-medium'
+                        : 'border-white/[0.08] text-[#8492a8] hover:text-white hover:border-white/20'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span className="text-[10px] opacity-60">({tab.count})</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="relative min-w-[240px]">
+              <Search className="w-3.5 h-3.5 text-[#8492a8] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search tools, sensors, topics..."
+                value={resourceSearch}
+                onChange={(e) => setResourceSearch(e.target.value)}
+                className="w-full bg-[#070b13] border border-white/[0.12] text-xs font-mono text-white pl-8 pr-3 py-1.5 focus:outline-none focus:border-[#70a7ff] transition placeholder:text-[#55637a]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {NASA_DATA_RESOURCES.filter((item) => {
+              const matchesCategory =
+                resourceCategory === 'ALL' ||
+                item.category.toLowerCase().includes(resourceCategory.toLowerCase()) ||
+                item.agency.toLowerCase().includes(resourceCategory.toLowerCase()) ||
+                (resourceCategory === 'NOAA' && (item.agency.includes('NOAA') || item.category.includes('Research') || item.category.includes('Station'))) ||
+                (resourceCategory === 'CSA' && (item.agency.includes('CSA') || item.agency.includes('Canadian') || item.category.includes('Canadian'))) ||
+                (resourceCategory === 'Methodology' && item.category.includes('Methodology'));
+
+              const q = resourceSearch.toLowerCase().trim();
+              const matchesSearch =
+                !q ||
+                item.name.toLowerCase().includes(q) ||
+                item.description.toLowerCase().includes(q) ||
+                item.tagline.toLowerCase().includes(q) ||
+                item.agency.toLowerCase().includes(q) ||
+                item.capabilities.some((c) => c.toLowerCase().includes(q));
+
+              return matchesCategory && matchesSearch;
+            }).map((item) => (
+              <div
+                key={item.id}
+                className="bg-[#0b111c] border border-white/[0.12] p-5 flex flex-col justify-between hover:border-[#70a7ff]/50 transition duration-200 group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border"
+                      style={{
+                        borderColor: `${item.badgeColor}40`,
+                        color: item.badgeColor,
+                        backgroundColor: `${item.badgeColor}10`
+                      }}
+                    >
+                      {item.agency}
+                    </span>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#8492a8] group-hover:text-[#70a7ff] transition"
+                      title="Open Official Resource"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+
+                  <h3 className="font-display font-bold text-base text-white group-hover:text-[#70a7ff] transition">
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                      {item.name}
+                      <span className="text-xs opacity-0 group-hover:opacity-100 transition">↗</span>
+                    </a>
+                  </h3>
+                  <p className="text-[11px] font-mono text-[#70a7ff] mt-0.5 mb-2">
+                    {item.tagline}
+                  </p>
+                  <p className="text-xs text-[#c0cad8] leading-relaxed mb-4">
+                    {item.description}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-white/[0.08] space-y-1.5">
+                  <span className="text-[10px] font-mono uppercase text-[#8492a8] block">Capabilities:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {item.capabilities.map((cap, idx) => (
+                      <span key={idx} className="text-[10px] font-mono px-2 py-0.5 bg-white/[0.04] border border-white/[0.08] text-[#a8b0bf]">
+                        {cap}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   );

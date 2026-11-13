@@ -146,6 +146,7 @@ export function calculateSensSlope(values, alpha = 0.05) {
 
   return {
     slope: Number(medianSlope.toFixed(6)),
+    slopeUnit: 'value/month',
     ci95: [
       Number(slopes[k1].toFixed(6)),
       Number(slopes[k2].toFixed(6))
@@ -237,6 +238,7 @@ export function calculateLinearRegression(values, alpha = 0.05) {
 
   return {
     slope: Number(slope.toFixed(6)),
+    slopeUnit: 'value/month',
     intercept: Number(intercept.toFixed(4)),
     rSquared: Number(rSquared.toFixed(4)),
     pValue: Number(pValue.toFixed(6)),
@@ -357,15 +359,20 @@ export async function performScientificAnalysis(observations, options = {}) {
         return {
           ...pyData,
           computedBy: 'Python FastAPI (PyMannKendall & SciPy)',
-          engineStatus: 'ONLINE'
+          engineStatus: 'ONLINE',
+          backendDiagnostics: null
         };
       } else {
         const errText = await pyResponse.text();
-        backendDiagnostics = `HTTP ${pyResponse.status} from ${targetUrl}: ${errText.slice(0, 100)}`;
+        backendDiagnostics = `HTTP ${pyResponse.status} from ${targetUrl}: ${errText.slice(0, 120)}`;
         console.warn(`[TrendEngine] Python backend responded with status ${pyResponse.status}:`, errText);
       }
     } catch (err) {
-      backendDiagnostics = `Connection failed (${targetUrl}): ${err.message}`;
+      if (err.name === 'AbortError') {
+        backendDiagnostics = `Timeout (6000ms) contacting Python backend at ${targetUrl}`;
+      } else {
+        backendDiagnostics = `Connection error (${targetUrl}): ${err.message}`;
+      }
       console.warn(`[TrendEngine] Python backend unavailable (${backendBase}):`, err.message, '- Falling back to JavaScript engine.');
     }
   }
@@ -379,7 +386,9 @@ export async function performScientificAnalysis(observations, options = {}) {
       status: 'INSUFFICIENT_DATA',
       trendClassification: 'Insufficient Data',
       observationCount: validObs.length,
-      message: 'Fewer than 4 valid observations available for statistical testing.'
+      message: 'Fewer than 4 valid observations available for statistical testing.',
+      backendDiagnostics,
+      engineStatus: 'FALLBACK'
     };
   }
 

@@ -69,13 +69,12 @@ export default function InvestigationWizardPage() {
             {[1, 2, 3, 4, 5, 6, 7].map((s) => (
               <div
                 key={s}
-                className={`h-1 transition-all ${
-                  s < currentStep
+                className={`h-1 transition-all ${s < currentStep
                     ? 'bg-[#70a7ff]'
                     : s === currentStep
-                    ? 'bg-[#a9c8ff]'
-                    : 'bg-white/10'
-                }`}
+                      ? 'bg-[#a9c8ff]'
+                      : 'bg-white/10'
+                  }`}
               />
             ))}
           </div>
@@ -107,11 +106,10 @@ export default function InvestigationWizardPage() {
                       );
                       if (matchingVar) setVariableId(matchingVar.id);
                     }}
-                    className={`p-4 border text-left transition flex items-center justify-between ${
-                      category === cat.id
+                    className={`p-4 border text-left transition flex items-center justify-between ${category === cat.id
                         ? 'border-[#70a7ff] bg-[#70a7ff]/10 text-white'
                         : 'border-[#2c384b] bg-[#0a101a] text-[#c4ccd8] hover:border-white/40'
-                    }`}
+                      }`}
                   >
                     <span className="font-display font-medium text-sm">{cat.name}</span>
                     {category === cat.id && <Check className="w-4 h-4 text-[#70a7ff]" />}
@@ -141,11 +139,10 @@ export default function InvestigationWizardPage() {
                     <button
                       key={v.id}
                       onClick={() => setVariableId(v.id)}
-                      className={`p-4 border text-left transition flex flex-col gap-1 ${
-                        variableId === v.id
+                      className={`p-4 border text-left transition flex flex-col gap-1 ${variableId === v.id
                           ? 'border-[#70a7ff] bg-[#70a7ff]/10 text-white'
                           : 'border-[#2c384b] bg-[#0a101a] text-[#c4ccd8] hover:border-white/40'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-display font-medium text-sm">{v.name}</span>
@@ -314,11 +311,10 @@ export default function InvestigationWizardPage() {
                 <button
                   type="button"
                   onClick={() => setResolution('monthly')}
-                  className={`p-4 border text-left transition ${
-                    resolution === 'monthly'
+                  className={`p-4 border text-left transition ${resolution === 'monthly'
                       ? 'border-[#70a7ff] bg-[#70a7ff]/10 text-white'
                       : 'border-[#2c384b] bg-[#0a101a] text-[#c4ccd8]'
-                  }`}
+                    }`}
                 >
                   <span className="font-display font-medium text-sm block">Monthly Aggregation</span>
                   <span className="text-[11px] text-[#8492a8] mt-1 block">
@@ -329,11 +325,10 @@ export default function InvestigationWizardPage() {
                 <button
                   type="button"
                   onClick={() => setResolution('daily')}
-                  className={`p-4 border text-left transition ${
-                    resolution === 'daily'
+                  className={`p-4 border text-left transition ${resolution === 'daily'
                       ? 'border-[#70a7ff] bg-[#70a7ff]/10 text-white'
                       : 'border-[#2c384b] bg-[#0a101a] text-[#c4ccd8]'
-                  }`}
+                    }`}
                 >
                   <span className="font-display font-medium text-sm block">Annualized Mean</span>
                   <span className="text-[11px] text-[#8492a8] mt-1 block">
